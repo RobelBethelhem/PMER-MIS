@@ -1,8 +1,14 @@
+<<<<<<< HEAD
+=======
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+>>>>>>> e0b16a6 (commit)
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+<<<<<<< HEAD
   :root {
     --background: 0 0% 98%;
     --foreground: 220 20% 14%;
@@ -101,3 +107,185 @@
     @apply bg-background text-foreground;
   }
 }
+=======
+:root {
+    /* === ERCS Premium Design System === */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* ERCS Red - Trust & Integrity */
+    --primary: 0 84% 45%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47.4% 11.2%;
+
+    --muted: 210 40% 92%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 92%;
+    --accent-foreground: 222 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 32% 91%;
+    --input: 214.3 32% 91%;
+    --ring: 0 84% 45%;
+
+    --radius: 1rem;
+
+    /* Sidebar - Deep Navy */
+    --sidebar-background: 222 47% 7%;
+    --sidebar-foreground: 215 20% 85%;
+    --sidebar-primary: 0 84% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 47% 10%;
+    --sidebar-ring: 0 84% 50%;
+
+    --traffic-green: 142 71% 45%;
+    --traffic-yellow: 48 96% 51%;
+    --traffic-red: 0 84% 45%;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    --card: 224 71% 5%;
+    --card-foreground: 210 40% 98%;
+    --popover: 224 71% 5%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 0 84% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 71% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 224 71% 12%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 224 71% 12%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 224 71% 12%;
+    --input: 224 71% 12%;
+    --ring: 0 84% 60%;
+  }
+
+  * { @apply border-border; }
+  
+  body {
+    @apply bg-[#F8FAFC] text-slate-800 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-slate-900;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+}
+
+@layer utilities {
+  .page-container {
+    @apply flex-1 flex flex-col gap-8 p-8 md:p-10 lg:p-12 max-w-[1700px] mx-auto w-full;
+    animation: page-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* ── Premium Elements ── */
+  .ercs-hero-glass {
+    @apply bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[2.5rem];
+    box-shadow: 
+      0 0 0 1px rgba(0,0,0,0.01),
+      0 10px 40px -10px rgba(0,0,0,0.05),
+      0 30px 60px -10px rgba(0,0,0,0.03);
+  }
+
+  .ercs-card-premium {
+    @apply bg-white border border-slate-200/60 rounded-3xl;
+    box-shadow: 
+      0 1px 3px rgba(0,0,0,0.02),
+      0 10px 30px -5px rgba(0,0,0,0.04);
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .ercs-card-premium:hover {
+    box-shadow: 
+      0 20px 50px -10px rgba(0,0,0,0.08),
+      0 0 0 1px rgba(0,0,0,0.02);
+    transform: translateY(-4px);
+  }
+
+  .btn-primary-ercs {
+    @apply bg-[#E11D48] text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-rose-500/25 hover:bg-rose-600 transition-all active:scale-[0.98];
+  }
+
+  .btn-secondary-ercs {
+    @apply bg-white text-slate-700 font-bold px-6 py-3 rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all active:scale-[0.98];
+  }
+
+  /* ── Sidebar ── */
+  .sidebar-container {
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+    @apply border-r border-white/5;
+  }
+
+  .sidebar-item-active {
+    @apply bg-white/10 text-white font-bold;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+
+  /* ── Typography ── */
+  .hero-title {
+    @apply text-5xl font-black tracking-tight text-[#0F172A] leading-[1.1];
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .hero-subtitle {
+    @apply text-lg font-medium text-slate-500 max-w-2xl leading-relaxed;
+  }
+
+  /* ── Stats ── */
+  .stat-value { @apply text-4xl font-black text-[#0F172A] tracking-tight; }
+  .stat-label { @apply text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-1; }
+
+  /* ── Interactive ── */
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+  }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: page-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.badge-live {
+  @apply px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 border border-emerald-100;
+}
+
+.badge-unit {
+  @apply px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] uppercase tracking-wider border border-slate-200;
+}
+
+>>>>>>> e0b16a6 (commit)
