@@ -1,161 +1,19 @@
-<<<<<<< HEAD
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { projects, budgetLines, donors, getProjectDonor } from "@/data/mockData";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { DollarSign, TrendingDown, TrendingUp, AlertCircle } from "lucide-react";
-
-export default function Budget() {
-  const totalBudget = projects.reduce((s, p) => s + p.budget, 0);
-  const totalSpent = projects.reduce((s, p) => s + p.spent, 0);
-  const burnRate = Math.round((totalSpent / totalBudget) * 100);
-
-  const donorData = donors.map(d => {
-    const donorProjects = projects.filter(p => p.donorId === d.id);
-    const budget = donorProjects.reduce((s, p) => s + p.budget, 0);
-    const spent = donorProjects.reduce((s, p) => s + p.spent, 0);
-    return { name: d.name, budget, spent, pct: Math.round((spent / budget) * 100) };
-  });
-
-  const donorPieColors = ["hsl(0, 72%, 51%)", "hsl(220, 70%, 50%)", "hsl(36, 100%, 50%)"];
-
-  const quarterlyData = [
-    { quarter: "Q1", planned: 0, actual: 0 },
-    { quarter: "Q2", planned: 0, actual: 0 },
-    { quarter: "Q3", planned: 0, actual: 0 },
-    { quarter: "Q4", planned: 0, actual: 0 },
-  ];
-  budgetLines.forEach(bl => {
-    quarterlyData[0].planned += bl.q1Planned; quarterlyData[0].actual += bl.q1Actual;
-    quarterlyData[1].planned += bl.q2Planned; quarterlyData[1].actual += bl.q2Actual;
-    quarterlyData[2].planned += bl.q3Planned; quarterlyData[2].actual += bl.q3Actual;
-    quarterlyData[3].planned += bl.q4Planned; quarterlyData[3].actual += bl.q4Actual;
-  });
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Budget & Finance</h1>
-        <p className="text-sm text-muted-foreground">Financial tracking and expenditure analysis</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card><CardContent className="p-5">
-          <div className="flex items-start justify-between"><div><p className="text-sm text-muted-foreground">Total Budget</p><p className="text-2xl font-bold">ETB {(totalBudget / 1e6).toFixed(1)}M</p></div><DollarSign className="h-5 w-5 text-primary" /></div>
-        </CardContent></Card>
-        <Card><CardContent className="p-5">
-          <div className="flex items-start justify-between"><div><p className="text-sm text-muted-foreground">Total Spent</p><p className="text-2xl font-bold">ETB {(totalSpent / 1e6).toFixed(1)}M</p></div><TrendingDown className="h-5 w-5 text-traffic-yellow" /></div>
-        </CardContent></Card>
-        <Card><CardContent className="p-5">
-          <div className="flex items-start justify-between"><div><p className="text-sm text-muted-foreground">Remaining</p><p className="text-2xl font-bold">ETB {((totalBudget - totalSpent) / 1e6).toFixed(1)}M</p></div><TrendingUp className="h-5 w-5 text-traffic-green" /></div>
-        </CardContent></Card>
-        <Card><CardContent className="p-5">
-          <div className="flex items-start justify-between"><div><p className="text-sm text-muted-foreground">Burn Rate</p><p className="text-2xl font-bold">{burnRate}%</p><div className="h-2 w-full bg-muted rounded-full mt-2 overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: `${burnRate}%` }} /></div></div><AlertCircle className="h-5 w-5 text-primary" /></div>
-        </CardContent></Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Planned vs Actual by Quarter</CardTitle></CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={quarterlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="quarter" />
-                  <YAxis tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
-                  <Tooltip formatter={(v: number) => `ETB ${v.toLocaleString()}`} />
-                  <Bar dataKey="planned" fill="hsl(220, 14%, 86%)" name="Planned" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="actual" fill="hsl(0, 72%, 51%)" name="Actual" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Budget by Donor</CardTitle></CardHeader>
-          <CardContent>
-            <div className="h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donorData} cx="50%" cy="50%" outerRadius={80} dataKey="budget" label={({ name }) => name}>
-                    {donorData.map((_, i) => <Cell key={i} fill={donorPieColors[i]} />)}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => `ETB ${v.toLocaleString()}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-base">Budget vs Expenditure by Activity</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Activity</TableHead>
-                <TableHead>Donor</TableHead>
-                <TableHead className="text-right">Budget</TableHead>
-                <TableHead className="text-right">Spent</TableHead>
-                <TableHead className="text-right">Variance</TableHead>
-                <TableHead className="w-32">Utilization</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {budgetLines.map(bl => {
-                const budget = bl.q1Planned + bl.q2Planned + bl.q3Planned + bl.q4Planned;
-                const spent = bl.q1Actual + bl.q2Actual + bl.q3Actual + bl.q4Actual;
-                const variance = budget - spent;
-                const util = Math.round((spent / budget) * 100);
-                return (
-                  <TableRow key={bl.id}>
-                    <TableCell className="font-medium text-sm">{bl.activity}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-[10px]">{getProjectDonor(bl.projectId)}</Badge></TableCell>
-                    <TableCell className="text-right text-sm">ETB {budget.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-sm">ETB {spent.toLocaleString()}</TableCell>
-                    <TableCell className={`text-right text-sm ${variance > 0 ? "text-traffic-green" : "text-traffic-red"}`}>ETB {variance.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(100, util)}%` }} /></div>
-                        <span className="text-xs w-8">{util}%</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-base">Cost Efficiency Metrics</CardTitle></CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div><p className="text-xs text-muted-foreground">Avg. Cost per Beneficiary</p><p className="text-xl font-bold">ETB 385</p><p className="text-xs text-muted-foreground">Across all programs</p></div>
-            <div><p className="text-xs text-muted-foreground">Cost per Output Unit</p><p className="text-xl font-bold">ETB 12,400</p><p className="text-xs text-muted-foreground">Per indicator output delivered</p></div>
-            <div><p className="text-xs text-muted-foreground">Budget Absorption Rate</p><p className="text-xl font-bold">{burnRate}%</p><p className="text-xs text-muted-foreground">Target: 85% by Q3</p></div>
-          </div>
-        </CardContent>
-      </Card>
-=======
-import React from "react";
-import { 
-  DollarSign, Search, Plus, Download, 
-  RotateCw, ChevronRight, Activity, 
+import React, { useState } from "react";
+import {
+  DollarSign, Search, Plus, Download,
+  RotateCw, ChevronRight, Activity,
   TrendingUp, BarChart3, PieChart,
   ShieldCheck, ArrowUpRight, Wallet, Clock
 } from "lucide-react";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart as RePieChart,
   Pie, Cell
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
+import { addAuditEntry } from "@/hooks/use-store";
 
 const absorptionData = [
   { name: "Q1", actual: 0.35, target: 0.42 },
@@ -178,7 +36,52 @@ const matrix = [
   { unit: "Micro-grants disbursement", id: "BL5", partner: "NORWEGIAN RED CROSS", allocated: 400000, utilized: 230000, balance: 170000, absorption: 57 },
 ];
 
+interface BudgetEntry {
+  id: string;
+  activity: string;
+  donor: string;
+  amount: number;
+  period: string;
+  notes: string;
+  createdAt: string;
+}
+
+const BUDGET_KEY = "pmer_budget_entries";
+
+function loadEntries(): BudgetEntry[] {
+  try { return JSON.parse(localStorage.getItem(BUDGET_KEY) || "[]"); } catch { return []; }
+}
+
 export default function Budget() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [entries, setEntries] = useState<BudgetEntry[]>(loadEntries);
+  const [activityType, setActivityType] = useState<"existing" | "new">("existing");
+  const [form, setForm] = useState({ activity: "", donor: "IFRC", amount: "", period: "Q1", notes: "" });
+
+  const handleSubmit = () => {
+    if (!form.activity || !form.amount) {
+      toast({ title: "Missing fields", description: "Activity and Amount are required.", variant: "destructive" });
+      return;
+    }
+    const entry: BudgetEntry = {
+      id: crypto.randomUUID?.() || Date.now().toString(),
+      activity: form.activity,
+      donor: form.donor,
+      amount: Number(form.amount),
+      period: form.period,
+      notes: form.notes,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [entry, ...entries];
+    setEntries(updated);
+    localStorage.setItem(BUDGET_KEY, JSON.stringify(updated));
+    addAuditEntry({ user: "Admin", action: "Added expenditure entry", type: "budget", module: "Budget" });
+    toast({ title: "Expenditure recorded", description: `ETB ${Number(form.amount).toLocaleString()} for ${form.activity}`, variant: "success" });
+    setForm({ activity: "", donor: "IFRC", amount: "", period: "Q1", notes: "" });
+    setActivityType("existing");
+    setDialogOpen(false);
+  };
+
   return (
     <div className="page-container pb-20">
       {/* ── Hero section ── */}
@@ -200,9 +103,12 @@ export default function Budget() {
               </p>
             </div>
 
-            <button className="btn-primary-ercs bg-[#E11D48] flex items-center gap-3 px-8">
+            <button onClick={() => setDialogOpen(true)} className="btn-primary-ercs bg-[#E11D48] flex items-center gap-3 px-8">
               <Plus className="w-5 h-5" />
               <span>Sync Expenditure</span>
+              {entries.length > 0 && (
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-black">{entries.length}</span>
+              )}
             </button>
           </div>
         </div>
@@ -381,7 +287,104 @@ export default function Budget() {
             ))}
          </div>
       </div>
->>>>>>> e0b16a6 (commit)
+
+      {/* ── Recent Entries ── */}
+      {entries.length > 0 && (
+        <div className="ercs-card-premium p-10">
+          <div className="mb-10">
+            <h2 className="text-xl font-black text-slate-800 tracking-tight">Recent Entries</h2>
+            <p className="text-sm font-medium text-slate-500 mt-1">Last {Math.min(5, entries.length)} expenditure entries from localStorage.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100">
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Activity</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Donor</th>
+                  <th className="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount (ETB)</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Period</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Notes</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {entries.slice(0, 5).map((e) => (
+                  <tr key={e.id} className="group hover:bg-slate-50/30 transition-colors">
+                    <td className="px-6 py-5 text-sm font-bold text-slate-800">{e.activity}</td>
+                    <td className="px-6 py-5">
+                      <span className="px-2 py-1 rounded text-[9px] font-black tracking-widest uppercase bg-slate-100 text-slate-500 border border-slate-200">{e.donor}</span>
+                    </td>
+                    <td className="px-6 py-5 text-right font-black text-slate-800 font-mono">{e.amount.toLocaleString()}</td>
+                    <td className="px-6 py-5 text-sm font-bold text-slate-600">{e.period}</td>
+                    <td className="px-6 py-5 text-sm text-slate-500 max-w-[200px] truncate">{e.notes || "—"}</td>
+                    <td className="px-6 py-5 text-[11px] font-bold text-slate-400">{new Date(e.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Add Expenditure Dialog ── */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[620px] rounded-3xl p-0 border-none overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+            <DialogHeader>
+              <DialogTitle className="text-white text-xl font-black tracking-tight">Add Expenditure</DialogTitle>
+              <p className="text-slate-400 text-sm font-medium">Record a new expenditure entry against a budget line.</p>
+            </DialogHeader>
+          </div>
+          <div className="p-8 space-y-5">
+            {/* Activity */}
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Activity Source</label>
+              <div className="flex gap-3 mb-3">
+                <button type="button" onClick={() => { setActivityType("existing"); setForm(f => ({ ...f, activity: "" })); }} className={cn("px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", activityType === "existing" ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-slate-50 text-slate-400 border-slate-200")}>Existing</button>
+                <button type="button" onClick={() => { setActivityType("new"); setForm(f => ({ ...f, activity: "" })); }} className={cn("px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", activityType === "new" ? "bg-rose-50 text-rose-600 border-rose-200" : "bg-slate-50 text-slate-400 border-slate-200")}>New Activity</button>
+              </div>
+              {activityType === "existing" ? (
+                <select value={form.activity} onChange={e => setForm(f => ({ ...f, activity: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none appearance-none cursor-pointer">
+                  <option value="">Select activity...</option>
+                  {matrix.map(m => <option key={m.id} value={m.unit}>{m.unit}</option>)}
+                </select>
+              ) : (
+                <input type="text" placeholder="Enter new activity name..." value={form.activity} onChange={e => setForm(f => ({ ...f, activity: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none" />
+              )}
+            </div>
+            {/* Donor/Partner */}
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Donor / Partner</label>
+              <select value={form.donor} onChange={e => setForm(f => ({ ...f, donor: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none appearance-none cursor-pointer">
+                {["IFRC", "ICRC", "Norwegian RC", "WHO", "UNICEF"].map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+            {/* Amount */}
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Amount Spent (ETB)</label>
+              <input type="number" placeholder="0" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none" />
+            </div>
+            {/* Period */}
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Period</label>
+              <select value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none appearance-none cursor-pointer">
+                {["Q1", "Q2", "Q3", "Q4"].map(q => <option key={q} value={q}>{q}</option>)}
+              </select>
+            </div>
+            {/* Notes */}
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Notes</label>
+              <textarea placeholder="Optional notes..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none resize-none" />
+            </div>
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              <button onClick={() => setDialogOpen(false)} className="btn-secondary-ercs flex-1">Cancel</button>
+              <button onClick={handleSubmit} className="btn-primary-ercs flex-1">Submit</button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

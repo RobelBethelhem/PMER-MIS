@@ -1,107 +1,3 @@
-<<<<<<< HEAD
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { indicators, branches, getBranchName, getTrafficColor, type Indicator } from "@/data/mockData";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { Search, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-const typeColors: Record<string, string> = {
-  Output: "bg-primary/10 text-primary",
-  Outcome: "bg-traffic-yellow/20 text-foreground",
-  Impact: "bg-traffic-green/20 text-foreground",
-};
-
-function IndicatorDetail({ indicator, onBack }: { indicator: Indicator; onBack: () => void }) {
-  const totalTarget = indicator.branchData.reduce((s, b) => s + b.target, 0);
-  const totalActual = indicator.branchData.reduce((s, b) => s + b.actual, 0);
-  const pct = totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : 0;
-
-  const branchChart = indicator.branchData.map(bd => ({
-    branch: getBranchName(bd.branchId),
-    target: bd.target,
-    actual: bd.actual,
-    pct: bd.target > 0 ? Math.round((bd.actual / bd.target) * 100) : 0,
-  }));
-
-  const trendData = indicator.quarterlyTrend.map((v, i) => ({ quarter: `Q${i + 1}`, value: v }));
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="h-4 w-4" /></Button>
-        <div>
-          <h2 className="text-lg font-semibold">{indicator.name}</h2>
-          <div className="flex gap-2 mt-1">
-            <Badge className={typeColors[indicator.type]}>{indicator.type}</Badge>
-            <Badge variant="outline">{indicator.sector}</Badge>
-            <Badge variant="outline">{indicator.unit}</Badge>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Baseline</p><p className="text-xl font-bold">{indicator.baseline.toLocaleString()}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Annual Target</p><p className="text-xl font-bold">{indicator.annualTarget.toLocaleString()}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Current Achievement</p><p className="text-xl font-bold">{totalActual.toLocaleString()}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Achievement %</p><p className={`text-xl font-bold ${pct >= 90 ? "text-traffic-green" : pct >= 70 ? "text-traffic-yellow" : "text-traffic-red"}`}>{pct}%</p></CardContent></Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Target vs Achievement by Branch</CardTitle></CardHeader>
-          <CardContent>
-            <div className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={branchChart}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="branch" tick={{ fontSize: 11 }} />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="target" fill="hsl(220, 14%, 86%)" name="Target" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="actual" fill="hsl(0, 72%, 51%)" name="Actual" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Quarterly Trend</CardTitle></CardHeader>
-          <CardContent>
-            <div className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="quarter" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="hsl(0, 72%, 51%)" strokeWidth={2} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {indicator.disaggregation && (
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Disaggregation</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex gap-8">
-              <div><p className="text-xs text-muted-foreground">Male</p><p className="text-lg font-semibold">{indicator.disaggregation.male.toLocaleString()}</p></div>
-              <div><p className="text-xs text-muted-foreground">Female</p><p className="text-lg font-semibold">{indicator.disaggregation.female.toLocaleString()}</p></div>
-              <div><p className="text-xs text-muted-foreground">Total</p><p className="text-lg font-semibold">{(indicator.disaggregation.male + indicator.disaggregation.female).toLocaleString()}</p></div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-=======
 import React, { useState } from "react";
 import { 
   ArrowLeft, Download, Activity, ShieldCheck, 
@@ -131,7 +27,17 @@ const growthData = [
   { month: "Jun", value: 910 },
 ];
 
+function getTrafficLight(achieve: number) {
+  if (achieve >= 90) return { label: "On Track", bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200", barColor: "bg-emerald-500" };
+  if (achieve >= 70) return { label: "At Risk", bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200", barColor: "bg-amber-500" };
+  return { label: "Critical", bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200", barColor: "bg-rose-500" };
+}
+
 function IndicatorRegistry({ onSelect }: { onSelect: (id: string) => void }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
   const indicators = [
     { title: "Community health volunteers trained", sub: "HEALTH • PEOPLE", type: "OUTPUT", typeColor: "text-blue-500 bg-blue-50 border-blue-100", target: "450", actual: "400", achieve: 89, color: "bg-orange-500" },
     { title: "First aid posts established", sub: "HEALTH • POSTS", type: "OUTPUT", typeColor: "text-blue-500 bg-blue-50 border-blue-100", target: "15", actual: "12", achieve: 80, color: "bg-orange-500" },
@@ -145,28 +51,77 @@ function IndicatorRegistry({ onSelect }: { onSelect: (id: string) => void }) {
     { title: "Water points constructed", sub: "WASH • POINTS", type: "OUTPUT", typeColor: "text-blue-500 bg-blue-50 border-blue-100", target: "30", actual: "13", achieve: 43, color: "bg-rose-500" },
   ];
 
+  const filteredIndicators = indicators.filter(ind => {
+    const matchesSearch = ind.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === "ALL" || ind.type === typeFilter;
+    const matchesStatus = statusFilter === "ALL" ||
+      (statusFilter === "GREEN" && ind.achieve >= 90) ||
+      (statusFilter === "YELLOW" && ind.achieve >= 70 && ind.achieve < 90) ||
+      (statusFilter === "RED" && ind.achieve < 70);
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const greenCount = indicators.filter(ind => ind.achieve >= 90).length;
+  const yellowCount = indicators.filter(ind => ind.achieve >= 70 && ind.achieve < 90).length;
+  const redCount = indicators.filter(ind => ind.achieve < 70).length;
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 px-8 pt-8">
       {/* ── Filters Bar ── */}
       <div className="flex items-center gap-4 mb-10 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
         <div className="relative group flex-1">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-rose-500 transition-colors" />
-          <input 
+          <input
             className="w-full pl-14 pr-4 py-4 rounded-2xl bg-slate-50/50 border-none text-sm font-medium focus:ring-2 focus:ring-rose-500/20"
             placeholder="Filter HQ Indicators..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-1 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-           <button className="px-6 py-3 rounded-xl bg-white text-[10px] font-black text-rose-500 shadow-sm border border-slate-100 uppercase tracking-widest flex items-center gap-2">
+           <div className="px-6 py-3 rounded-xl bg-white text-[10px] font-black text-rose-500 shadow-sm border border-slate-100 uppercase tracking-widest flex items-center gap-2">
              <Filter className="w-3.5 h-3.5" />
-           </button>
-           <button className="px-6 py-3 rounded-xl text-slate-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white hover:text-slate-600 transition-all">
-             GLOBAL... <ChevronDown className="w-3.5 h-3.5" />
-           </button>
-           <button className="px-6 py-3 rounded-xl text-slate-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white hover:text-slate-600 transition-all">
-             ALL VERTICALS <ChevronDown className="w-3.5 h-3.5" />
-           </button>
+           </div>
+           <select
+             value={typeFilter}
+             onChange={e => setTypeFilter(e.target.value)}
+             className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-rose-500/20"
+           >
+             <option value="ALL">ALL TYPES</option>
+             <option value="OUTPUT">OUTPUT</option>
+             <option value="OUTCOME">OUTCOME</option>
+             <option value="IMPACT">IMPACT</option>
+           </select>
+           <select
+             value={statusFilter}
+             onChange={e => setStatusFilter(e.target.value)}
+             className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-rose-500/20"
+           >
+             <option value="ALL">ALL STATUS</option>
+             <option value="GREEN">GREEN ≥90%</option>
+             <option value="YELLOW">YELLOW 70-89%</option>
+             <option value="RED">RED &lt;70%</option>
+           </select>
+           <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-slate-50 text-slate-500 border-slate-200 ml-1">
+             {filteredIndicators.length} of {indicators.length} indicators
+           </span>
         </div>
+      </div>
+
+      {/* ── Summary Stats ── */}
+      <div className="flex items-center gap-3 mb-6">
+        <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-200">
+          {indicators.length} Total
+        </span>
+        <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-emerald-50 text-emerald-600 border-emerald-200">
+          {greenCount} On Track
+        </span>
+        <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-amber-50 text-amber-600 border-amber-200">
+          {yellowCount} At Risk
+        </span>
+        <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-rose-50 text-rose-600 border-rose-200">
+          {redCount} Critical
+        </span>
       </div>
 
       {/* ── Indicators Table ── */}
@@ -183,7 +138,7 @@ function IndicatorRegistry({ onSelect }: { onSelect: (id: string) => void }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-               {indicators.map((ind, i) => (
+               {filteredIndicators.map((ind, i) => (
                  <tr 
                    key={i} 
                    onClick={() => onSelect(ind.title)}
@@ -201,17 +156,24 @@ function IndicatorRegistry({ onSelect }: { onSelect: (id: string) => void }) {
                    <td className="px-6 py-10 text-center text-sm font-black text-slate-400 tracking-tighter">{ind.target}</td>
                    <td className="px-6 py-10 text-center text-sm font-black text-slate-800 tracking-tighter">{ind.actual}</td>
                    <td className="px-10 py-10">
+                      {(() => { const traffic = getTrafficLight(ind.achieve); return (
                       <div className="flex items-center gap-6">
                          <div className="flex-1">
                             <div className="flex justify-between items-center mb-1.5">
                                <span className="text-[11px] font-black text-slate-800">{ind.achieve}%</span>
                             </div>
-                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                               <div className={cn("h-full transition-all duration-1000", ind.color)} style={{ width: `${ind.achieve}%` }} />
+                            <div className="flex items-center">
+                               <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className={cn("h-full transition-all duration-1000", traffic.barColor)} style={{ width: `${ind.achieve}%` }} />
+                               </div>
+                               <span className={cn("px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ml-2 whitespace-nowrap", traffic.bg, traffic.text, traffic.border)}>
+                                 {traffic.label}
+                               </span>
                             </div>
                          </div>
                          <ChevronRight className="w-4 h-4 text-slate-200 group-hover:text-rose-500 transition-all group-hover:translate-x-1" />
                       </div>
+                      ); })()}
                    </td>
                  </tr>
                ))}
@@ -219,99 +181,12 @@ function IndicatorRegistry({ onSelect }: { onSelect: (id: string) => void }) {
           </table>
         </div>
       </div>
->>>>>>> e0b16a6 (commit)
+
     </div>
   );
 }
 
 export default function Monitoring() {
-<<<<<<< HEAD
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [sectorFilter, setSectorFilter] = useState<string>("all");
-  const [selected, setSelected] = useState<Indicator | null>(null);
-
-  if (selected) return <IndicatorDetail indicator={selected} onBack={() => setSelected(null)} />;
-
-  const sectors = [...new Set(indicators.map(i => i.sector))];
-  const filtered = indicators.filter(i => {
-    if (search && !i.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (typeFilter !== "all" && i.type !== typeFilter) return false;
-    if (sectorFilter !== "all" && i.sector !== sectorFilter) return false;
-    return true;
-  });
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Indicator Monitoring</h1>
-        <p className="text-sm text-muted-foreground">Centralized indicator registry and performance tracking</p>
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search indicators..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Type" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="Output">Output</SelectItem>
-            <SelectItem value="Outcome">Outcome</SelectItem>
-            <SelectItem value="Impact">Impact</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sectorFilter} onValueChange={setSectorFilter}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Sector" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Sectors</SelectItem>
-            {sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Indicator</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Sector</TableHead>
-                <TableHead className="text-right">Target</TableHead>
-                <TableHead className="text-right">Actual</TableHead>
-                <TableHead className="text-right">Achievement</TableHead>
-                <TableHead className="w-12">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map(ind => {
-                const t = ind.branchData.reduce((s, b) => s + b.target, 0);
-                const a = ind.branchData.reduce((s, b) => s + b.actual, 0);
-                const pct = t > 0 ? Math.round((a / t) * 100) : 0;
-                const color = getTrafficColor(pct);
-                return (
-                  <TableRow key={ind.id} className="cursor-pointer" onClick={() => setSelected(ind)}>
-                    <TableCell className="font-medium text-sm">{ind.name}</TableCell>
-                    <TableCell><Badge className={`text-[10px] ${typeColors[ind.type]}`}>{ind.type}</Badge></TableCell>
-                    <TableCell className="text-sm">{ind.sector}</TableCell>
-                    <TableCell className="text-right">{t.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">{a.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-medium">{pct}%</TableCell>
-                    <TableCell>
-                      <span className={`inline-block h-3 w-3 rounded-full ${
-                        color === "green" ? "bg-traffic-green" : color === "yellow" ? "bg-traffic-yellow" : "bg-traffic-red"
-                      }`} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-=======
   const [selectedIndicator, setSelectedIndicator] = useState<string | null>(null);
 
   if (!selectedIndicator) {
@@ -476,7 +351,7 @@ export default function Monitoring() {
           </div>
         </div>
       </div>
->>>>>>> e0b16a6 (commit)
+
     </div>
   );
 }

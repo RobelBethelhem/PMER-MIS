@@ -1,34 +1,108 @@
-import React, { useState } from "react";
-import { 
-  Users, Shield, MapPin, Search, 
+import React, { useState, useEffect } from "react";
+import {
+  Users, Shield, MapPin, Search,
   ArrowLeft, ChevronRight, Mail, Clock,
-  UserPlus, MoreHorizontal, Filter, 
+  UserPlus, MoreHorizontal, Filter,
   Activity, Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { addAuditEntry } from "@/hooks/use-store";
 
-const branches = [
-  { name: "Addis Ababa", users: 12, admins: 2, status: "ACTIVE", lastActive: "10m ago" },
-  { name: "Amhara", users: 8, admins: 1, status: "ACTIVE", lastActive: "2h ago" },
-  { name: "Oromia", users: 15, admins: 3, status: "ACTIVE", lastActive: "5m ago" },
-  { name: "SNNPR", users: 6, admins: 1, status: "INACTIVE", lastActive: "2d ago" },
-  { name: "Tigray", users: 9, admins: 2, status: "ACTIVE", lastActive: "1h ago" },
-  { name: "Somali", users: 7, admins: 1, status: "ACTIVE", lastActive: "4h ago" },
+interface BranchUser {
+  name: string;
+  email: string;
+  role: string;
+  branch: string;
+  lastActivity: string;
+  status: string;
+}
+
+interface BranchInfo {
+  name: string;
+  admins: number;
+  status: string;
+  lastActive: string;
+}
+
+const STORAGE_KEY = "pmer_regional_users";
+
+const defaultBranches: BranchInfo[] = [
+  { name: "Addis Ababa", admins: 2, status: "ACTIVE", lastActive: "10m ago" },
+  { name: "Amhara", admins: 1, status: "ACTIVE", lastActive: "2h ago" },
+  { name: "Oromia", admins: 3, status: "ACTIVE", lastActive: "5m ago" },
+  { name: "SNNPR", admins: 1, status: "INACTIVE", lastActive: "2d ago" },
+  { name: "Tigray", admins: 2, status: "ACTIVE", lastActive: "1h ago" },
+  { name: "Somali", admins: 1, status: "ACTIVE", lastActive: "4h ago" },
 ];
 
-const mockUsers = [
+const defaultUsers: BranchUser[] = [
   { name: "Yonas Girma", email: "yonas.g@ercs.org", role: "DATA ENTRY", branch: "Addis Ababa", lastActivity: "2025-06-15 10:05", status: "ACTIVE" },
   { name: "Meron Assefa", email: "meron.a@ercs.org", role: "DATA ENTRY", branch: "Addis Ababa", lastActivity: "2025-06-13 11:30", status: "ACTIVE" },
   { name: "Tadesse W.", email: "tadesse.w@ercs.org", role: "BRANCH ADMIN", branch: "Addis Ababa", lastActivity: "2025-06-15 08:20", status: "ACTIVE" },
   { name: "Abebe K.", email: "abebe.k@ercs.org", role: "DATA ENTRY", branch: "Addis Ababa", lastActivity: "2025-06-14 16:45", status: "INACTIVE" },
 ];
 
+function loadUsers(): BranchUser[] {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try { return JSON.parse(raw); } catch { /* fall through */ }
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUsers));
+  return defaultUsers;
+}
+
+function saveUsers(users: BranchUser[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+}
+
 export default function RegionalUsers() {
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [users, setUsers] = useState<BranchUser[]>(loadUsers);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({ fullName: "", email: "", role: "DATA ENTRY", branch: "Addis Ababa" });
+  const { toast } = useToast();
+
+  // Reload users from localStorage whenever we navigate back from the detail view
+  useEffect(() => {
+    if (!selectedBranch) setUsers(loadUsers());
+  }, [selectedBranch]);
+
+  const branchUserCount = (branchName: string) => users.filter(u => u.branch === branchName).length;
+  const branchAdminCount = (branchName: string) => {
+    const fromData = users.filter(u => u.branch === branchName && u.role === "BRANCH ADMIN").length;
+    const fallback = defaultBranches.find(b => b.name === branchName)?.admins ?? 0;
+    return Math.max(fromData, fallback);
+  };
+
+  const handleProvision = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.fullName.trim() || !formData.email.trim()) {
+      toast({ title: "Validation Error", description: "Full Name and Email are required.", variant: "destructive" });
+      return;
+    }
+    const now = new Date().toISOString().replace("T", " ").slice(0, 16);
+    const newUser: BranchUser = {
+      name: formData.fullName.trim(),
+      email: formData.email.trim(),
+      role: formData.role,
+      branch: formData.branch,
+      lastActivity: now,
+      status: "ACTIVE",
+    };
+    const updated = [...users, newUser];
+    saveUsers(updated);
+    setUsers(updated);
+    addAuditEntry({ user: "HQ Admin", action: `Provisioned branch user ${newUser.name} for ${newUser.branch}`, type: "user_created", module: "Regional Users" });
+    toast({ title: "User Provisioned", description: `${newUser.name} added to ${newUser.branch} branch.` });
+    setFormData({ fullName: "", email: "", role: "DATA ENTRY", branch: "Addis Ababa" });
+    setDialogOpen(false);
+  };
 
   if (selectedBranch) {
-    return <BranchUsersView branchName={selectedBranch} onBack={() => setSelectedBranch(null)} />;
+    return <BranchUsersView branchName={selectedBranch} onBack={() => setSelectedBranch(null)} users={users} />;
   }
 
   return (
@@ -53,7 +127,10 @@ export default function RegionalUsers() {
               </p>
             </div>
 
-            <button className="flex items-center gap-3 px-8 py-5 rounded-2xl bg-[#E11D48] text-[11px] font-black text-white uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all self-start lg:self-center">
+            <button
+              onClick={() => setDialogOpen(true)}
+              className="flex items-center gap-3 px-8 py-5 rounded-2xl bg-[#E11D48] text-[11px] font-black text-white uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all self-start lg:self-center"
+            >
               <UserPlus className="w-5 h-5" />
               Provision Branch User
             </button>
@@ -64,9 +141,12 @@ export default function RegionalUsers() {
 
       {/* ── Branch Directory Grid ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {branches.map((b, i) => (
-          <div 
-            key={i} 
+        {defaultBranches.map((b, i) => {
+          const userCount = branchUserCount(b.name);
+          const adminCount = branchAdminCount(b.name);
+          return (
+          <div
+            key={i}
             onClick={() => setSelectedBranch(b.name)}
             className="ercs-card-premium p-10 group hover-lift cursor-pointer flex flex-col"
           >
@@ -85,11 +165,11 @@ export default function RegionalUsers() {
 
             <div className="grid grid-cols-2 gap-4 mt-auto">
                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center">
-                  <span className="text-2xl font-black text-slate-800">{b.users}</span>
+                  <span className="text-2xl font-black text-slate-800">{userCount}</span>
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Users</span>
                </div>
                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center">
-                  <span className="text-2xl font-black text-blue-600">{b.admins}</span>
+                  <span className="text-2xl font-black text-blue-600">{adminCount}</span>
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Admins</span>
                </div>
             </div>
@@ -103,19 +183,100 @@ export default function RegionalUsers() {
                <ChevronRight className="w-6 h-6 text-slate-200 group-hover:text-rose-500 transition-all group-hover:translate-x-1" />
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
+
+      {/* ── Provision Branch User Dialog ── */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[620px] rounded-3xl p-0 border-none overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+            <DialogHeader>
+              <DialogTitle className="text-white text-xl font-black tracking-tight">Provision Branch User</DialogTitle>
+              <p className="text-slate-400 text-sm font-medium">Create a new user account for branch-level operations</p>
+            </DialogHeader>
+          </div>
+          <form onSubmit={handleProvision} className="p-8 space-y-5">
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Full Name</label>
+              <input
+                value={formData.fullName}
+                onChange={e => setFormData(p => ({ ...p, fullName: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none"
+                placeholder="Enter full name"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none"
+                placeholder="user@ercs.org"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Role</label>
+              <select
+                value={formData.role}
+                onChange={e => setFormData(p => ({ ...p, role: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none appearance-none"
+              >
+                <option value="BRANCH ADMIN">BRANCH ADMIN</option>
+                <option value="DATA ENTRY">DATA ENTRY</option>
+                <option value="FINANCE OFFICER">FINANCE OFFICER</option>
+                <option value="READ-ONLY">READ-ONLY</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Branch</label>
+              <select
+                value={formData.branch}
+                onChange={e => setFormData(p => ({ ...p, branch: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 outline-none appearance-none"
+              >
+                <option value="Addis Ababa">Addis Ababa</option>
+                <option value="Amhara">Amhara</option>
+                <option value="Oromia">Oromia</option>
+                <option value="SNNPR">SNNPR</option>
+                <option value="Tigray">Tigray</option>
+                <option value="Somali">Somali</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Status</label>
+              <input
+                value="ACTIVE"
+                readOnly
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium text-emerald-600 outline-none cursor-not-allowed"
+              />
+            </div>
+            <div className="flex gap-3 pt-4">
+              <button type="button" onClick={() => setDialogOpen(false)} className="btn-secondary-ercs flex-1">Cancel</button>
+              <button type="submit" className="btn-primary-ercs flex-1">Create User</button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-function BranchUsersView({ branchName, onBack }: { branchName: string, onBack: () => void }) {
+function BranchUsersView({ branchName, onBack, users }: { branchName: string; onBack: () => void; users: BranchUser[] }) {
+  const [search, setSearch] = useState("");
+
+  const branchUsers = users.filter(u => u.branch === branchName);
+  const filteredUsers = search.trim()
+    ? branchUsers.filter(u => u.name.toLowerCase().includes(search.toLowerCase()))
+    : branchUsers;
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 px-8 pt-8">
       <div className="ercs-card-premium p-10 mb-10 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="flex items-center gap-6">
-            <button 
+            <button
               onClick={onBack}
               className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-[#E11D48] shadow-sm transition-all"
             >
@@ -134,7 +295,9 @@ function BranchUsersView({ branchName, onBack }: { branchName: string, onBack: (
           <div className="flex items-center gap-4">
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-              <input 
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
                 className="pl-12 pr-4 py-4 w-64 rounded-2xl bg-slate-50 border-none text-sm font-medium focus:ring-2 focus:ring-rose-500/20"
                 placeholder="Search branch users..."
               />
@@ -160,7 +323,13 @@ function BranchUsersView({ branchName, onBack }: { branchName: string, onBack: (
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {mockUsers.map((user, i) => (
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-10 py-16 text-center text-sm font-medium text-slate-400">
+                    {search.trim() ? "No users match your search." : "No users found for this branch."}
+                  </td>
+                </tr>
+              ) : filteredUsers.map((user, i) => (
                 <tr key={i} className="group hover:bg-slate-50/50 transition-colors">
                   <td className="px-10 py-8">
                     <div className="flex items-center gap-4 text-slate-800">

@@ -1,113 +1,10 @@
-<<<<<<< HEAD
-=======
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
->>>>>>> e0b16a6 (commit)
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-<<<<<<< HEAD
-  :root {
-    --background: 0 0% 98%;
-    --foreground: 220 20% 14%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 14%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 14%;
-
-    --primary: 0 72% 51%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 14%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
-
-    --accent: 220 14% 96%;
-    --accent-foreground: 220 20% 14%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 0 72% 51%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 20% 14%;
-    --sidebar-primary: 0 72% 51%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 72% 96%;
-    --sidebar-accent-foreground: 0 72% 41%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 0 72% 51%;
-
-    /* Traffic light */
-    --traffic-green: 122 39% 49%;
-    --traffic-yellow: 36 100% 50%;
-    --traffic-red: 4 90% 58%;
-  }
-
-  .dark {
-    --background: 220 20% 7%;
-    --foreground: 0 0% 95%;
-
-    --card: 220 20% 10%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 220 20% 10%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 0 72% 51%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 14% 16%;
-    --secondary-foreground: 0 0% 95%;
-
-    --muted: 220 14% 16%;
-    --muted-foreground: 220 10% 60%;
-
-    --accent: 220 14% 16%;
-    --accent-foreground: 0 0% 95%;
-
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 95%;
-
-    --border: 220 14% 18%;
-    --input: 220 14% 18%;
-    --ring: 0 72% 51%;
-
-    --sidebar-background: 220 20% 7%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 72% 51%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 16%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 220 14% 18%;
-    --sidebar-ring: 0 72% 51%;
-
-    --traffic-green: 122 39% 49%;
-    --traffic-yellow: 36 100% 50%;
-    --traffic-red: 4 90% 58%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-=======
 :root {
     /* === ERCS Premium Design System === */
     --background: 210 40% 98%;
@@ -179,7 +76,7 @@
   }
 
   * { @apply border-border; }
-  
+
   body {
     @apply bg-[#F8FAFC] text-slate-800 antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -207,7 +104,7 @@
   /* ── Premium Elements ── */
   .ercs-hero-glass {
     @apply bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[2.5rem];
-    box-shadow: 
+    box-shadow:
       0 0 0 1px rgba(0,0,0,0.01),
       0 10px 40px -10px rgba(0,0,0,0.05),
       0 30px 60px -10px rgba(0,0,0,0.03);
@@ -215,14 +112,14 @@
 
   .ercs-card-premium {
     @apply bg-white border border-slate-200/60 rounded-3xl;
-    box-shadow: 
+    box-shadow:
       0 1px 3px rgba(0,0,0,0.02),
       0 10px 30px -5px rgba(0,0,0,0.04);
     transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .ercs-card-premium:hover {
-    box-shadow: 
+    box-shadow:
       0 20px 50px -10px rgba(0,0,0,0.08),
       0 0 0 1px rgba(0,0,0,0.02);
     transform: translateY(-4px);
@@ -287,5 +184,3 @@
 .badge-unit {
   @apply px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] uppercase tracking-wider border border-slate-200;
 }
-
->>>>>>> e0b16a6 (commit)

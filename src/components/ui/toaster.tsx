@@ -1,32 +1,11 @@
 import { useToast } from "@/hooks/use-toast";
-<<<<<<< HEAD
-import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
-=======
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
->>>>>>> e0b16a6 (commit)
+
 
 export function Toaster() {
   const { toasts } = useToast();
 
-<<<<<<< HEAD
-  return (
-    <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && <ToastDescription>{description}</ToastDescription>}
-            </div>
-            {action}
-            <ToastClose />
-          </Toast>
-        );
-      })}
-      <ToastViewport />
-    </ToastProvider>
-=======
   if (toasts.length === 0) return null;
 
   return (
@@ -48,6 +27,6 @@ export function Toaster() {
         </div>
       ))}
     </div>
->>>>>>> e0b16a6 (commit)
+
   );
 }

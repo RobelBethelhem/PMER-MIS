@@ -8,13 +8,6 @@ export default {
     container: {
       center: true,
       padding: "2rem",
-<<<<<<< HEAD
-      screens: {
-        "2xl": "1400px",
-      },
-    },
-    extend: {
-=======
       screens: { "2xl": "1400px" },
     },
     extend: {
@@ -23,7 +16,6 @@ export default {
         heading: ["Plus Jakarta Sans", "Inter", "sans-serif"],
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
->>>>>>> e0b16a6 (commit)
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -68,30 +60,6 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-<<<<<<< HEAD
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-=======
         traffic: {
           green: "hsl(var(--traffic-green))",
           yellow: "hsl(var(--traffic-yellow))",
@@ -132,18 +100,14 @@ export default {
         "scale-in": {
           from: { opacity: "0", transform: "scale(0.95)" },
           to: { opacity: "1", transform: "scale(1)" },
->>>>>>> e0b16a6 (commit)
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-<<<<<<< HEAD
-=======
         shimmer: "shimmer 2s infinite linear",
         "fade-up": "fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
         "scale-in": "scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
->>>>>>> e0b16a6 (commit)
       },
     },
   },
