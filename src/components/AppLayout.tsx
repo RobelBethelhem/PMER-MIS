@@ -252,7 +252,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       <mod.icon className={cn("w-[18px] h-[18px] shrink-0 stroke-[2.5px]", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
                       {!collapsed && <span className="font-bold tracking-wide">{mod.label}</span>}
                     </NavLink>
-                    <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
+                    {collapsed && <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />}
                   </div>
                 </div>
               );
@@ -306,8 +306,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       </>
                     )}
                   </button>
-                  {/* Flyout on hover */}
-                  <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
+                  {/* Flyout only in collapsed mode */}
+                  {collapsed && <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />}
                 </div>
 
                 {/* Sub-items */}
