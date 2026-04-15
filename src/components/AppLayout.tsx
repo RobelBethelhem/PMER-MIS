@@ -315,8 +315,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           "flex items-center gap-4 border-b border-white/5 transition-all duration-300",
           collapsed ? "px-4 py-6 justify-center" : "px-6 py-7"
         )}>
-          <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-white shrink-0 shadow-2xl">
-            <svg viewBox="0 0 24 24" fill="#E11D48" className="w-7 h-7"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" /></svg>
+          <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-white shrink-0 shadow-2xl overflow-hidden p-1">
+            <img src="/ercs-logo.jpg" alt="ERCS" className="w-full h-full object-contain" />
             <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[3px] border-[#0f172a] animate-pulse" />
           </div>
           {!collapsed && (
