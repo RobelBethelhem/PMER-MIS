@@ -107,8 +107,69 @@ function isChildActive(to: string, pathname: string, search: string) {
   if (path !== pathname) return false;
   if (qs && search !== qs) return false;
   if (!qs && !search) return true;
-  if (!qs && search) return true; // first child matches base path
+  if (!qs && search) return true;
   return true;
+}
+
+/* ── Hover flyout for sidebar items ── */
+function SidebarTooltip({ mod, collapsed, pathname, search }: { mod: NavModule; collapsed: boolean; pathname: string; search: string }) {
+  return (
+    <div className={cn(
+      "absolute left-full top-0 ml-3 z-[100] pointer-events-none group-hover/tip:pointer-events-auto",
+      "opacity-0 translate-x-2 group-hover/tip:opacity-100 group-hover/tip:translate-x-0",
+      "transition-all duration-200 ease-out"
+    )}>
+      <div className="bg-slate-900 border border-white/10 rounded-2xl shadow-2xl shadow-black/40 min-w-[240px] overflow-hidden">
+        {/* Header */}
+        <div className="px-5 pt-4 pb-3 border-b border-white/5">
+          <div className="flex items-center gap-2.5">
+            {mod.prefix && (
+              <span className="w-6 h-6 rounded-lg bg-[#E11D48]/20 text-[#E11D48] text-[9px] font-black flex items-center justify-center">{mod.prefix}</span>
+            )}
+            <div>
+              <p className="text-white font-black text-sm tracking-tight">{mod.label}</p>
+              <p className="text-slate-500 text-[10px] font-medium mt-0.5">{mod.desc}</p>
+            </div>
+            {mod.badge && (
+              <span className="ml-auto px-1.5 py-0.5 rounded bg-[#E11D48]/20 text-[#E11D48] text-[7px] font-black uppercase tracking-widest">{mod.badge}</span>
+            )}
+          </div>
+        </div>
+        {/* Children */}
+        {mod.children && mod.children.length > 0 && (
+          <div className="py-2 px-2">
+            {mod.children.map((child) => {
+              const childActive = isChildActive(child.to, pathname, search);
+              return (
+                <Link
+                  key={child.label}
+                  to={child.to}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] transition-all",
+                    childActive
+                      ? "bg-white/10 text-white font-bold"
+                      : "text-slate-400 hover:text-white hover:bg-white/5 font-medium"
+                  )}
+                >
+                  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", childActive ? "bg-[#E11D48]" : "bg-slate-600")} />
+                  <span className="truncate">{child.label}</span>
+                  {child.badge && (
+                    <span className="ml-auto px-1.5 py-0.5 rounded bg-[#E11D48]/20 text-[#E11D48] text-[7px] font-black uppercase tracking-widest">{child.badge}</span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+        {/* No children (Dashboard) */}
+        {!mod.children && (
+          <div className="px-5 py-3">
+            <p className="text-slate-500 text-[11px] font-medium">Executive dashboard with KPIs, traffic light system, and real-time monitoring across all branches.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 /* ════════════════════════════════════════════════════════ */
@@ -178,18 +239,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   {!collapsed && (
                     <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] px-3 pt-3 pb-2">Overview</p>
                   )}
-                  <NavLink
-                    to={mod.to}
-                    end
-                    className={cn(
-                      "group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
-                      collapsed ? "px-3 py-3 justify-center" : "px-4 py-3",
-                      active ? "sidebar-item-active" : "text-slate-400 hover:text-white hover:bg-white/5"
-                    )}
-                  >
-                    <mod.icon className={cn("w-[18px] h-[18px] shrink-0 stroke-[2.5px]", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
-                    {!collapsed && <span className="font-bold tracking-wide">{mod.label}</span>}
-                  </NavLink>
+                  <div className="relative group/tip">
+                    <NavLink
+                      to={mod.to}
+                      end
+                      className={cn(
+                        "group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
+                        collapsed ? "px-3 py-3 justify-center" : "px-4 py-3",
+                        active ? "sidebar-item-active" : "text-slate-400 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      <mod.icon className={cn("w-[18px] h-[18px] shrink-0 stroke-[2.5px]", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
+                      {!collapsed && <span className="font-bold tracking-wide">{mod.label}</span>}
+                    </NavLink>
+                    <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
+                  </div>
                 </div>
               );
             }
@@ -204,43 +268,47 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </p>
                 )}
 
-                {/* Module header */}
-                <button
-                  onClick={() => {
-                    if (collapsed) {
-                      const first = mod.children?.[0];
-                      if (first) navigate(first.to);
-                    } else {
-                      toggle(mod.id);
-                    }
-                  }}
-                  className={cn(
-                    "w-full group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
-                    collapsed ? "px-3 py-3 justify-center" : "px-4 py-2.5",
-                    active ? "bg-white/[0.07] text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
-                  )}
-                >
-                  <div className={cn(
-                    "flex items-center justify-center shrink-0 transition-colors",
-                    active ? "text-white" : "text-slate-500 group-hover:text-slate-300"
-                  )}>
-                    <mod.icon className="w-[18px] h-[18px] stroke-[2.5px]" />
-                  </div>
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-left font-bold tracking-wide truncate">{mod.label}</span>
-                      {mod.badge && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-[#E11D48]/20 text-[#E11D48] text-[8px] font-black uppercase tracking-widest mr-1">
-                          {mod.badge}
-                        </span>
-                      )}
-                      <ChevronDown className={cn(
-                        "w-3.5 h-3.5 text-slate-500 transition-transform duration-300 shrink-0",
-                        isOpen && "rotate-180"
-                      )} />
-                    </>
-                  )}
-                </button>
+                {/* Module header with hover flyout */}
+                <div className="relative group/tip">
+                  <button
+                    onClick={() => {
+                      if (collapsed) {
+                        const first = mod.children?.[0];
+                        if (first) navigate(first.to);
+                      } else {
+                        toggle(mod.id);
+                      }
+                    }}
+                    className={cn(
+                      "w-full group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
+                      collapsed ? "px-3 py-3 justify-center" : "px-4 py-2.5",
+                      active ? "bg-white/[0.07] text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    <div className={cn(
+                      "flex items-center justify-center shrink-0 transition-colors",
+                      active ? "text-white" : "text-slate-500 group-hover:text-slate-300"
+                    )}>
+                      <mod.icon className="w-[18px] h-[18px] stroke-[2.5px]" />
+                    </div>
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-left font-bold tracking-wide truncate">{mod.label}</span>
+                        {mod.badge && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-[#E11D48]/20 text-[#E11D48] text-[8px] font-black uppercase tracking-widest mr-1">
+                            {mod.badge}
+                          </span>
+                        )}
+                        <ChevronDown className={cn(
+                          "w-3.5 h-3.5 text-slate-500 transition-transform duration-300 shrink-0",
+                          isOpen && "rotate-180"
+                        )} />
+                      </>
+                    )}
+                  </button>
+                  {/* Flyout on hover */}
+                  <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
+                </div>
 
                 {/* Sub-items */}
                 {!collapsed && (
