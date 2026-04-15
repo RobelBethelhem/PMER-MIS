@@ -111,60 +111,137 @@ function isChildActive(to: string, pathname: string, search: string) {
   return true;
 }
 
-/* ── Hover flyout for sidebar items ── */
-function SidebarTooltip({ mod, collapsed, pathname, search }: { mod: NavModule; collapsed: boolean; pathname: string; search: string }) {
+/* ── Rich module descriptions ── */
+const moduleDetails: Record<string, { summary: string; features: { name: string; desc: string }[] }> = {
+  dashboard: {
+    summary: "Executive overview with real-time KPIs, traffic light performance system, and national aggregation across all ERCS branches and programs.",
+    features: [
+      { name: "Live KPIs", desc: "National achievement, direct reach, reporting velocity, indicator health" },
+      { name: "Traffic Light System", desc: "Green (≥90%), Yellow (70-89%), Red (<70%) performance classification" },
+      { name: "Quarter & View Switching", desc: "Filter by Q1-Q4 and National/Branch/Donor perspectives" },
+      { name: "Portfolio Monitoring", desc: "Circular progress for DRM, Health, Org Readiness, Youth sectors" },
+    ],
+  },
+  planning: {
+    summary: "Digitize ERCS planning from strategic plan to branch-level activity planning with logframe integration and Gantt chart visualization.",
+    features: [
+      { name: "Operational Plans", desc: "Create and manage Annual Operational Plans (AOPs) per branch with status tracking" },
+      { name: "Workplan & Gantt", desc: "Visual 12-month timeline with activity bars, milestones, and delay alerts" },
+      { name: "Periodic Targets", desc: "Quarterly target-setting with Q1-Q4 actual tracking and achievement %" },
+      { name: "Financial Resources", desc: "Budget allocation by donor with absorption rates and variance" },
+      { name: "Logframe / ToC", desc: "Visual hierarchy: Strategic Priority → Outcomes → Outputs → Activities" },
+    ],
+  },
+  monitoring: {
+    summary: "Real-time indicator tracking with data entry forms, auto-calculated achievement, and disaggregation by sex and age group.",
+    features: [
+      { name: "Indicator Registry", desc: "Centralized library with Output/Outcome/Impact types, search, and filters" },
+      { name: "Data Collection", desc: "Branch-level monthly data entry with validation, traffic lights, and variance notes" },
+    ],
+  },
+  budget: {
+    summary: "Link financial planning with programmatic performance. Track expenditure, absorption rates, and cost efficiency metrics.",
+    features: [
+      { name: "Budget Overview", desc: "Total budget, spent, remaining, and burn rate with quarterly absorption chart" },
+      { name: "Absorption & Variance", desc: "Activity-level absorption matrix with donor distribution pie chart" },
+      { name: "Cost Efficiency", desc: "Cost per beneficiary, operational ROI, and system burn rate metrics" },
+    ],
+  },
+  consolidation: {
+    summary: "Automatically consolidate branch submissions into a centralized national database with data quality checks and duplicate detection.",
+    features: [
+      { name: "Branch Submissions", desc: "Track monthly/quarterly submission status per branch with completeness" },
+      { name: "National Aggregation", desc: "Real-time rollup with filtering by Region, Program, Donor, and Period" },
+    ],
+  },
+  reports: {
+    summary: "Generate standardized donor-ready reports with a visual report builder. Customize columns, format, and export to PDF/Excel/Word.",
+    features: [
+      { name: "Report Templates", desc: "Monthly, Quarterly, Semi-Annual, Annual + donor-specific (IFRC, ICRC, NRC)" },
+      { name: "Donor Reports", desc: "Pre-formatted templates matching IFRC, ICRC, and PNS reporting requirements" },
+      { name: "Export Center", desc: "Drag-and-drop column builder with live preview and multi-format export" },
+    ],
+  },
+  users: {
+    summary: "Role-based access control with 6 permission levels, branch-level data restriction, and comprehensive audit trail.",
+    features: [
+      { name: "System Users", desc: "Manage users with roles: Super Admin, PMER Admin, Branch Admin, Data Entry, Finance, Read-only" },
+      { name: "Regional Users", desc: "Branch-level user provisioning with decentralized management" },
+      { name: "Permissions Matrix", desc: "Visual RBAC matrix showing access levels across all modules" },
+      { name: "Audit Trail", desc: "Full record of data entry, modifications, approvals, and login activity" },
+    ],
+  },
+  documents: {
+    summary: "Centralized knowledge repository for all PMER documents including assessments, reports, logframes, and evaluation tools.",
+    features: [
+      { name: "Document Library", desc: "8 archive categories with drill-down to individual documents, search, and file management" },
+    ],
+  },
+};
+
+/* ── Hover detail panel ── */
+function ModuleDetailPanel({ mod, collapsed, pathname, search }: { mod: NavModule; collapsed: boolean; pathname: string; search: string }) {
+  const details = moduleDetails[mod.id];
+  if (!details) return null;
+
   return (
     <div className={cn(
       "absolute left-full top-0 ml-3 z-[100] pointer-events-none group-hover/tip:pointer-events-auto",
-      "opacity-0 translate-x-2 group-hover/tip:opacity-100 group-hover/tip:translate-x-0",
-      "transition-all duration-200 ease-out"
+      "opacity-0 scale-[0.97] translate-x-2 group-hover/tip:opacity-100 group-hover/tip:scale-100 group-hover/tip:translate-x-0",
+      "transition-all duration-250 ease-out"
     )}>
-      <div className="bg-slate-900 border border-white/10 rounded-2xl shadow-2xl shadow-black/40 min-w-[240px] overflow-hidden">
-        {/* Header */}
-        <div className="px-5 pt-4 pb-3 border-b border-white/5">
-          <div className="flex items-center gap-2.5">
-            {mod.prefix && (
-              <span className="w-6 h-6 rounded-lg bg-[#E11D48]/20 text-[#E11D48] text-[9px] font-black flex items-center justify-center">{mod.prefix}</span>
+      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-900/15 border border-slate-200/80 overflow-hidden" style={{ width: collapsed ? 320 : 340 }}>
+        {/* Gradient header */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#E11D48]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+          <div className="relative z-10 flex items-start gap-3">
+            {mod.prefix ? (
+              <span className="w-8 h-8 rounded-xl bg-[#E11D48]/20 text-[#E11D48] text-xs font-black flex items-center justify-center shrink-0 mt-0.5">{mod.prefix}</span>
+            ) : (
+              <span className="w-8 h-8 rounded-xl bg-white/10 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                <mod.icon className="w-4 h-4" />
+              </span>
             )}
-            <div>
-              <p className="text-white font-black text-sm tracking-tight">{mod.label}</p>
-              <p className="text-slate-500 text-[10px] font-medium mt-0.5">{mod.desc}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-white font-black text-[15px] tracking-tight">{mod.label}</p>
+                {mod.badge && (
+                  <span className="px-2 py-0.5 rounded-full bg-[#E11D48]/30 text-[#E11D48] text-[8px] font-black uppercase tracking-widest animate-pulse">{mod.badge}</span>
+                )}
+              </div>
+              <p className="text-slate-400 text-[11px] font-medium mt-1 leading-relaxed">{details.summary}</p>
             </div>
-            {mod.badge && (
-              <span className="ml-auto px-1.5 py-0.5 rounded bg-[#E11D48]/20 text-[#E11D48] text-[7px] font-black uppercase tracking-widest">{mod.badge}</span>
-            )}
           </div>
         </div>
-        {/* Children */}
-        {mod.children && mod.children.length > 0 && (
-          <div className="py-2 px-2">
-            {mod.children.map((child) => {
-              const childActive = isChildActive(child.to, pathname, search);
-              return (
-                <Link
-                  key={child.label}
-                  to={child.to}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] transition-all",
-                    childActive
-                      ? "bg-white/10 text-white font-bold"
-                      : "text-slate-400 hover:text-white hover:bg-white/5 font-medium"
-                  )}
-                >
-                  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", childActive ? "bg-[#E11D48]" : "bg-slate-600")} />
-                  <span className="truncate">{child.label}</span>
-                  {child.badge && (
-                    <span className="ml-auto px-1.5 py-0.5 rounded bg-[#E11D48]/20 text-[#E11D48] text-[7px] font-black uppercase tracking-widest">{child.badge}</span>
-                  )}
+
+        {/* Feature list */}
+        <div className="p-4 space-y-1">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-2">Capabilities</p>
+          {details.features.map((f, i) => (
+            <div key={i} className="flex gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group/feat cursor-default">
+              <div className="w-6 h-6 rounded-lg bg-rose-50 flex items-center justify-center shrink-0 mt-0.5 group-hover/feat:bg-rose-100 transition-colors">
+                <span className="text-[#E11D48] text-[10px] font-black">{i + 1}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-black text-slate-800 tracking-tight">{f.name}</p>
+                <p className="text-[11px] font-medium text-slate-500 mt-0.5 leading-snug">{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer with children links (collapsed mode only) */}
+        {collapsed && mod.children && (
+          <div className="border-t border-slate-100 p-3">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-2">Quick Navigation</p>
+            <div className="flex flex-wrap gap-1.5 px-1">
+              {mod.children.map((child) => (
+                <Link key={child.label} to={child.to}
+                  className="px-3 py-1.5 rounded-lg bg-slate-50 text-[10px] font-bold text-slate-600 hover:bg-[#E11D48] hover:text-white transition-all">
+                  {child.label}
                 </Link>
-              );
-            })}
-          </div>
-        )}
-        {/* No children (Dashboard) */}
-        {!mod.children && (
-          <div className="px-5 py-3">
-            <p className="text-slate-500 text-[11px] font-medium">Executive dashboard with KPIs, traffic light system, and real-time monitoring across all branches.</p>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -252,7 +329,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       <mod.icon className={cn("w-[18px] h-[18px] shrink-0 stroke-[2.5px]", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
                       {!collapsed && <span className="font-bold tracking-wide">{mod.label}</span>}
                     </NavLink>
-                    {collapsed && <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />}
+                    <ModuleDetailPanel mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
                   </div>
                 </div>
               );
@@ -307,7 +384,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     )}
                   </button>
                   {/* Flyout only in collapsed mode */}
-                  {collapsed && <SidebarTooltip mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />}
+                  <ModuleDetailPanel mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
                 </div>
 
                 {/* Sub-items */}
