@@ -179,18 +179,22 @@ const moduleDetails: Record<string, { summary: string; features: { name: string;
   },
 };
 
-/* ── Hover detail panel ── */
-function ModuleDetailPanel({ mod, collapsed, pathname, search }: { mod: NavModule; collapsed: boolean; pathname: string; search: string }) {
+/* ── Hover detail panel (rendered via portal with fixed positioning) ── */
+function ModuleDetailPanel({ mod, collapsed, rect }: { mod: NavModule; collapsed: boolean; rect: DOMRect }) {
   const details = moduleDetails[mod.id];
   if (!details) return null;
 
+  // Position: to the right of the sidebar item, vertically aligned, clamped to viewport
+  const left = rect.right + 12;
+  const maxTop = window.innerHeight - 420;
+  const top = Math.max(8, Math.min(rect.top, maxTop));
+
   return (
-    <div className={cn(
-      "absolute left-full top-0 ml-3 z-[100] pointer-events-none group-hover/tip:pointer-events-auto",
-      "opacity-0 scale-[0.97] translate-x-2 group-hover/tip:opacity-100 group-hover/tip:scale-100 group-hover/tip:translate-x-0",
-      "transition-all duration-250 ease-out"
-    )}>
-      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-900/15 border border-slate-200/80 overflow-hidden" style={{ width: collapsed ? 320 : 340 }}>
+    <div
+      className="fixed z-[200] animate-in fade-in slide-in-from-left-2 duration-200"
+      style={{ left, top, width: collapsed ? 320 : 340 }}
+    >
+      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-900/15 border border-slate-200/80 overflow-hidden">
         {/* Gradient header */}
         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-5 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#E11D48]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
@@ -262,6 +266,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return active ? [active.id] : [];
   });
 
+  // Hover detail panel state
+  const [hoveredMod, setHoveredMod] = useState<NavModule | null>(null);
+  const [hoverRect, setHoverRect] = useState<DOMRect | null>(null);
+  const hoverTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const onModuleEnter = (mod: NavModule, el: HTMLElement) => {
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    setHoveredMod(mod);
+    setHoverRect(el.getBoundingClientRect());
+  };
+  const onModuleLeave = () => {
+    hoverTimeout.current = setTimeout(() => { setHoveredMod(null); setHoverRect(null); }, 150);
+  };
+  const onPanelEnter = () => {
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+  };
+  const onPanelLeave = () => {
+    setHoveredMod(null); setHoverRect(null);
+  };
+
   useEffect(() => {
     const active = modules.find((m) => isModuleActive(m, location.pathname));
     if (active && !expanded.includes(active.id)) {
@@ -316,21 +340,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   {!collapsed && (
                     <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] px-3 pt-3 pb-2">Overview</p>
                   )}
-                  <div className="relative group/tip">
-                    <NavLink
-                      to={mod.to}
-                      end
-                      className={cn(
-                        "group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
-                        collapsed ? "px-3 py-3 justify-center" : "px-4 py-3",
-                        active ? "sidebar-item-active" : "text-slate-400 hover:text-white hover:bg-white/5"
-                      )}
-                    >
-                      <mod.icon className={cn("w-[18px] h-[18px] shrink-0 stroke-[2.5px]", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
-                      {!collapsed && <span className="font-bold tracking-wide">{mod.label}</span>}
-                    </NavLink>
-                    <ModuleDetailPanel mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
-                  </div>
+                  <NavLink
+                    to={mod.to}
+                    end
+                    onMouseEnter={(e) => onModuleEnter(mod, e.currentTarget)}
+                    onMouseLeave={onModuleLeave}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
+                      collapsed ? "px-3 py-3 justify-center" : "px-4 py-3",
+                      active ? "sidebar-item-active" : "text-slate-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    <mod.icon className={cn("w-[18px] h-[18px] shrink-0 stroke-[2.5px]", active ? "text-white" : "text-slate-500 group-hover:text-slate-300")} />
+                    {!collapsed && <span className="font-bold tracking-wide">{mod.label}</span>}
+                  </NavLink>
                 </div>
               );
             }
@@ -345,47 +368,45 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </p>
                 )}
 
-                {/* Module header with hover flyout */}
-                <div className="relative group/tip">
-                  <button
-                    onClick={() => {
-                      if (collapsed) {
-                        const first = mod.children?.[0];
-                        if (first) navigate(first.to);
-                      } else {
-                        toggle(mod.id);
-                      }
-                    }}
-                    className={cn(
-                      "w-full group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
-                      collapsed ? "px-3 py-3 justify-center" : "px-4 py-2.5",
-                      active ? "bg-white/[0.07] text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
-                    )}
-                  >
-                    <div className={cn(
-                      "flex items-center justify-center shrink-0 transition-colors",
-                      active ? "text-white" : "text-slate-500 group-hover:text-slate-300"
-                    )}>
-                      <mod.icon className="w-[18px] h-[18px] stroke-[2.5px]" />
-                    </div>
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 text-left font-bold tracking-wide truncate">{mod.label}</span>
-                        {mod.badge && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-[#E11D48]/20 text-[#E11D48] text-[8px] font-black uppercase tracking-widest mr-1">
-                            {mod.badge}
-                          </span>
-                        )}
-                        <ChevronDown className={cn(
-                          "w-3.5 h-3.5 text-slate-500 transition-transform duration-300 shrink-0",
-                          isOpen && "rotate-180"
-                        )} />
-                      </>
-                    )}
-                  </button>
-                  {/* Flyout only in collapsed mode */}
-                  <ModuleDetailPanel mod={mod} collapsed={collapsed} pathname={location.pathname} search={location.search} />
-                </div>
+                {/* Module header */}
+                <button
+                  onMouseEnter={(e) => onModuleEnter(mod, e.currentTarget)}
+                  onMouseLeave={onModuleLeave}
+                  onClick={() => {
+                    if (collapsed) {
+                      const first = mod.children?.[0];
+                      if (first) navigate(first.to);
+                    } else {
+                      toggle(mod.id);
+                    }
+                  }}
+                  className={cn(
+                    "w-full group flex items-center gap-3 rounded-2xl text-[13px] transition-all duration-300",
+                    collapsed ? "px-3 py-3 justify-center" : "px-4 py-2.5",
+                    active ? "bg-white/[0.07] text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <div className={cn(
+                    "flex items-center justify-center shrink-0 transition-colors",
+                    active ? "text-white" : "text-slate-500 group-hover:text-slate-300"
+                  )}>
+                    <mod.icon className="w-[18px] h-[18px] stroke-[2.5px]" />
+                  </div>
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-left font-bold tracking-wide truncate">{mod.label}</span>
+                      {mod.badge && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-[#E11D48]/20 text-[#E11D48] text-[8px] font-black uppercase tracking-widest mr-1">
+                          {mod.badge}
+                        </span>
+                      )}
+                      <ChevronDown className={cn(
+                        "w-3.5 h-3.5 text-slate-500 transition-transform duration-300 shrink-0",
+                        isOpen && "rotate-180"
+                      )} />
+                    </>
+                  )}
+                </button>
 
                 {/* Sub-items */}
                 {!collapsed && (
@@ -472,6 +493,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <ChevronLeft className={cn("w-3.5 h-3.5 transition-transform duration-500", collapsed && "rotate-180")} />
         </button>
       </aside>
+
+      {/* ── Hover Detail Panel (fixed, rendered outside sidebar to avoid clipping) ── */}
+      {hoveredMod && hoverRect && (
+        <div
+          onMouseEnter={onPanelEnter}
+          onMouseLeave={onPanelLeave}
+        >
+          <ModuleDetailPanel mod={hoveredMod} collapsed={collapsed} rect={hoverRect} />
+        </div>
+      )}
 
       {/* ── Main Content ── */}
       <div className="flex flex-col flex-1 min-w-0 relative">
