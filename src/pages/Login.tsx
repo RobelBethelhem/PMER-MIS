@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -58,8 +58,11 @@ export default function Login() {
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* ── Branding ── */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/10 shadow-2xl shadow-rose-500/20 mb-6">
-            <Shield className="w-10 h-10 text-[#E11D48]" strokeWidth={2.5} />
+          <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white shadow-2xl shadow-rose-500/30 mb-6">
+            <svg viewBox="0 0 24 24" fill="#E11D48" className="w-12 h-12">
+              <path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7V3z" />
+            </svg>
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-[3px] border-[#0f172a] animate-pulse" />
           </div>
           <h1
             className="text-6xl font-black text-white tracking-tight mb-2"
